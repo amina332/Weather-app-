@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather app</title>
+    <link rel="stylesheet" href="./src/output.css">
+
+
+
+ 
+</head>
+<body>
+    <header class="bg-blue-400 shadow-sm px-8 py-5 m-1.5 rounded-xl">
+        <h1 class="text-3xl text-amber-50 font-bold">
+           Weather☀️app 
+        </h1>
+        
+    </header>
+    <main>
+        <section>
+            <h2 class="text-2xl text-yellow-400 font-bold m-5">
+                consulter la meteo au maroc
+            </h2>
+            <p class="text-2xl text-gray-500 font-bold m-4">
+                Decouvrir les conditions meterologiques de ville choisis
+            </p>
+            <div class="flex justify-end m-2.5 gap-4">
+                <input type="text" id="ville" placeholder="rechercher une ville" class="flex-1 border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 ">
+                <button type="button" id="recherche" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                rechercher
+            </button>
+            </div>
+            <p id="message_derreur" class="text-2xl text-red-600 hidden"></p>
+            <p id="loading" class="text-2xl text-black m-2 hidden">
+                🌤️Recuperation des donnees meteo...
+            </p>
+        </section>
+        <section class="bg-blue-100 rounded-2xl p-3  m-3">
+            <div class="flex items-center gap-1">
+
+                <h2 class="text-xl text-blue-950 font-bold mb-4">
+                Meteo actuelle
+            </h2>
+
+            <span class="text-blue-950">---</span>
+
+            <h3 id="la_ville_selectionner" class="text-2xl text-blue-950">
+                
+            </h3>
+
+            </div>
+            <div class="flex items-center justify-between mt-4">
+                <div>
+                <p id="temperature_en_°C">
+                °C
+                </p>
+                <p id="description">
+
+                </p>
+            </div>
+           <span id="icone"></span>
+            </div>
+            <div class="flex items-center gap-80">
+                <div>
+                <p>💧Humidite:</p>
+                <p id="humidite">
+                    %
+                </p>
+                </div>
+                <div>
+                <p>💨Vent:</p>
+                <p id="vent">
+                    km/h
+                </p>
+                </div>
+                
+            </div>
+            
+        </section>
+        
+        <section class="bg-blue-100 rounded-2xl p-3 m-3">
+
+    <h2 class="text-xl font-bold text-blue-950 mb-8">
+        Previsions meteo
+    </h2>
+
+    <div class="flex flex-row  gap-4 mt-8 ">
+
+       <div style="background-color: white; padding: 20px; width: 25%;">
+
+    <h3>Lundi</h3>
+    <p>☀️</p>
+    <p>25 °C</p>
+    <p>Ensoleille</p>
+
+    </div>
+        <div style="background-color: white; padding: 20px; width: 25%">
+
+    <h3>Mardi</h3>
+    <p>☀️</p>
+    <p>20 °C</p>
+    <p>Ensoleille</p>
+
+    </div>
+     <div style="background-color: white; padding: 20px; width: 25%">
+
+    <h3>Mercredi</h3>
+    <p>☀️</p>
+    <p>26 °C</p>
+    <p>Ensoleille</p>
+
+    </div>
+
+    </div>
+</section>
+
+    </main>
+    <script src="./src/script.js"></script>
+</body>
+</html>
