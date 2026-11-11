@@ -30,20 +30,36 @@ recherche.addEventListener("click", function() {
         return;
     }
 
-     message_derreur.classList.add("hidden")
-     loading.classList.remove("hidden")
-     
+    message_derreur.classList.add("hidden")
+    loading.classList.remove("hidden")
+
     const urlVille = url + encodeURIComponent(nomVille)
 
     fetch(urlVille)
     .then(response => response.json())
     .then(data => {
-        console.log(data);
+        const resultat = data.results[0];
+
+        const latitude = resultat.latitude;
+        const longitude = resultat.longitude;
+
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&wind_speed_unit=kmh&timezone=auto`
+
+        return fetch(weatherUrl)
+    })
+    .then(response => response.json())
+    .then(meteo => {
+        console.log(meteo)
+
+        console.log(meteo.current.temperature_2m)
+        console.log(meteo.current.relative_humidity_2m)
+        console.log(meteo.current.wind_speed_10m)
+        console.log(meteo.current.weather_code)
     })
     .catch(error => {
-        console.log(error);
+        console.log(error)
     })
     .finally(() => {
-        loading.classList.add("hidden");
+        loading.classList.add("hidden")
     });
-});
+})
