@@ -14,52 +14,103 @@ const humidite = document.getElementById("humidite")
 
 const vent = document.getElementById("vent")
 
+const jour_container = document.getElementById("jour_container")
+
 const message_derreur = document.getElementById("message_derreur")
 
 const recherche = document.getElementById("recherche")
 
-const url = "https://geocoding-api.open-meteo.com/v1/search?name="
 
-recherche.addEventListener("click", function() {
+const WEATHER_CODES = {
+    0: { label: "Ciel dégagé", icon: "☀️" },
+    1: { label: "Plutôt dégagé", icon: "🌤️" },
+    2: { label: "Partiellement nuageux", icon: "⛅" },
+    3: { label: "Couvert", icon: "☁️" },
+    45: { label: "Brouillard", icon: "🌫️" },
+    48: { label: "Brouillard givrant", icon: "🌫️" },
+    51: { label: "Bruine légère", icon: "🌦️" },
+    53: { label: "Bruine", icon: "🌦️" },
+    55: { label: "Bruine forte", icon: "🌦️" },
+    56: { label: "Bruine verglaçante", icon: "🌧️" },
+    57: { label: "Bruine verglaçante", icon: "🌧️" },
+    61: { label: "Pluie légère", icon: "🌧️" },
+    63: { label: "Pluie", icon: "🌧️" },
+    65: { label: "Pluie forte", icon: "🌧️" },
+    66: { label: "Pluie verglaçante", icon: "🌧️" },
+    67: { label: "Pluie verglaçante", icon: "🌧️" },
+    71: { label: "Neige légère", icon: "🌨️" },
+    73: { label: "Neige", icon: "🌨️" },
+    75: { label: "Neige forte", icon: "❄️" },
+    77: { label: "Grains de neige", icon: "🌨️" },
+    80: { label: "Averses légères", icon: "🌦️" },
+    81: { label: "Averses", icon: "🌧️" },
+    82: { label: "Averses violentes", icon: "⛈️" },
+    85: { label: "Averses de neige", icon: "🌨️" },
+    86: { label: "Fortes averses de neige", icon: "❄️" },
+    95: { label: "Orage", icon: "⛈️" },
+    96: { label: "Orage avec grêle", icon: "⛈️" },
+    99: { label: "Orage avec forte grêle", icon: "⛈️" },
+};
 
-    const nomVille = ville.value.trim()
+const url = "https://geocoding-api.open-meteo.com/v1/search?name="   /*rechercher une ville et de recuperer ses coordonnees geographiques : latitude et longitude*/
 
-    if (nomVille === "") {
+recherche.addEventListener("click", function () {
+
+    const nomVille = ville.value.trim()  /*Recuperer le nom de la ville */
+
+    if (nomVille === "") {    /*Verifier si le champ est vide */
         message_derreur.textContent = "Veuillez saisir une ville !"
         message_derreur.classList.remove("hidden")
         return;
     }
 
-    message_derreur.classList.add("hidden")
+    message_derreur.classList.add("hidden")   /*Cacher erreur et afficher Loading */
     loading.classList.remove("hidden")
 
     const urlVille = url + encodeURIComponent(nomVille)
 
     fetch(urlVille)
-    .then(response => response.json())
-    .then(data => {
-        const resultat = data.results[0];
+        .then(response => response.json())
+        .then(data => {
+            const resultat = data.results[0]  /*recuperer la premiere resultat */
 
-        const latitude = resultat.latitude;
-        const longitude = resultat.longitude;
+            la_ville_selectionner.textContent = resultat.name    /*afficher non de ville */
 
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&wind_speed_unit=kmh&timezone=auto`
+            const latitude = resultat.latitude
+            const longitude = resultat.longitude
 
-        return fetch(weatherUrl)
-    })
-    .then(response => response.json())
-    .then(meteo => {
-        console.log(meteo)
+            const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=5&wind_speed_unit=kmh&timezone=auto`
+            return fetch(weatherUrl)
+        })
+        .then(response => response.json())
+        .then(meteo => {
+            temperature_en_C.textContent = meteo.current.temperature_2m + " °C"
 
-        console.log(meteo.current.temperature_2m)
-        console.log(meteo.current.relative_humidity_2m)
-        console.log(meteo.current.wind_speed_10m)
-        console.log(meteo.current.weather_code)
-    })
-    .catch(error => {
-        console.log(error)
-    })
-    .finally(() => {
-        loading.classList.add("hidden")
-    });
+            humidite.textContent = meteo.current.relative_humidity_2m + " %"
+
+            vent.textContent = meteo.current.wind_speed_10m + " km/h"
+
+            return meteo
+        
+        })
+        .then(jours => {
+            jours.daily.temperature_2m_max.forEach((jour, index) => {
+                jour_container.innerHTML += `
+                    <div class="bg-white p-5 w-full">
+                        <h3>${jours.daily.time[index]}</h3>
+                        <p>☀️</p>
+                        <p>${jour} °C</p>
+                        <p>${jours.daily.temperature_2m_min[index]} °C</p>
+                    </div>
+                `;
+            });
+
+            return jours
+        })
+        .catch(error => {
+            console.log(error)
+        })
+        .finally(() => {
+            loading.classList.add("hidden")
+        });
 })
