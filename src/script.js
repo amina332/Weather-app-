@@ -88,21 +88,28 @@ recherche.addEventListener("click", function () {
 
             humidite.textContent = meteo.current.relative_humidity_2m + " %"
 
-            vent.textContent = meteo.current.wind_speed_10m + " km/h"
+            vent.textContent = meteo.current.wind_speed_10m + " km/h"   /*current pour meteo actuel */
 
             return meteo
         
         })
-        .then(jours => {
-            jours.daily.temperature_2m_max.forEach((jour, index) => {
-                jour_container.innerHTML += `
+        .then(jours => {  /*affichage de prevision de 5 jours */
+            jour_container.innerHTML = ""
+            jours.daily.temperature_2m_max.forEach((jour, index) => {         /*affichage des prochains jours */
+                const date = new Date(jours.daily.time[index])
+                        const dateEnClair = date.toLocaleDateString("fr-FR", {   /*afficher la date clair */
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long"
+                    })
+
+                jour_container.innerHTML += ` 
                     <div class="bg-white p-5 w-full">
-                        <h3>${jours.daily.time[index]}</h3>
+                        <h3>${dateEnClair}</h3>
                         <p>☀️</p>
                         <p>${jour} °C</p>
                         <p>${jours.daily.temperature_2m_min[index]} °C</p>
-                    </div>
-                `;
+                    </div> `
             });
 
             return jours
