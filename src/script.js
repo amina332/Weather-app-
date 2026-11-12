@@ -70,29 +70,49 @@ recherche.addEventListener("click", function () {
     const urlVille = url + encodeURIComponent(nomVille)
 
     fetch(urlVille)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+            throw new Error("Erreur lors de la recherche de la ville")
+        }
+
+        return response.json()
+        })
         .then(data => {
-            const resultat = data.results[0]  /*recuperer la premiere resultat */
 
-            la_ville_selectionner.textContent = resultat.name    /*afficher non de ville */
-
-            const latitude = resultat.latitude
-            const longitude = resultat.longitude
-
-            const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=5&wind_speed_unit=kmh&timezone=auto`
-            return fetch(weatherUrl)
+    if (!data.results || data.results.length === 0) {
+        throw new Error("Ville introuvable")
+    }
+    const resultat = data.results[0]
+    la_ville_selectionner.textContent = resultat.name
+    const latitude = resultat.latitude
+    const longitude = resultat.longitude
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=5&wind_speed_unit=kmh&timezone=auto`
+    return fetch(weatherUrl)
+})
+        .then(response => {
+             if (!response.ok) {
+        throw new Error("Erreur lors de la récupération de la météo")
+    }
+    return response.json()
         })
-        .then(response => response.json())
-        .then(meteo => {
-            temperature_en_C.textContent = meteo.current.temperature_2m + " °C"
+       .then(meteo => {
+    const codeMeteo = meteo.current.weather_code
 
-            humidite.textContent = meteo.current.relative_humidity_2m + " %"
+    if (WEATHER_CODES[codeMeteo]) {   /*verifier que le code meteo existe dans mon objet WEATHER_CODES */
+        description.textContent = WEATHER_CODES[codeMeteo].label   /*label et icon */
+        icone.textContent = WEATHER_CODES[codeMeteo].icon
+    }
+    else {
+        description.textContent = "Météo inconnue" /*sinon affichage description et icone par défaut */
+        icone.textContent = "🌡️"
+    }
 
-            vent.textContent = meteo.current.wind_speed_10m + " km/h"   /*current pour meteo actuel */
+    temperature_en_C.textContent = meteo.current.temperature_2m + " °C"
+    humidite.textContent = meteo.current.relative_humidity_2m + " %"
+    vent.textContent = meteo.current.wind_speed_10m + " km/h"
 
-            return meteo
-        
-        })
+    return meteo
+})
         .then(jours => {  /*affichage de prevision de 5 jours */
             jour_container.innerHTML = ""
             jours.daily.temperature_2m_max.forEach((jour, index) => {         /*affichage des prochains jours */
@@ -115,7 +135,8 @@ recherche.addEventListener("click", function () {
             return jours
         })
         .catch(error => {
-            console.log(error)
+            message_derreur.textContent = error.message
+            message_derreur.classList.remove("hidden")
         })
         .finally(() => {
             loading.classList.add("hidden")
