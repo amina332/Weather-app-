@@ -122,11 +122,17 @@ recherche.addEventListener("click", function () {
                         day: "numeric",
                         month: "long"
                     })
+                    const codeJour = jours.daily.weather_code[index]
+                    let iconeJour = "🌡️"
+
+                    if (WEATHER_CODES[codeJour]) {    /*icone correspondant a la meteo du jour */
+                        iconeJour = WEATHER_CODES[codeJour].icon
+                    }
 
                 jour_container.innerHTML += ` 
                     <div class="bg-white p-5 w-full">
                         <h3>${dateEnClair}</h3>
-                        <p>☀️</p>
+                        <p>${iconeJour}</p>
                         <p>${jour} °C</p>
                         <p>${jours.daily.temperature_2m_min[index]} °C</p>
                     </div> `
