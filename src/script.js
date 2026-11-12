@@ -20,6 +20,9 @@ const message_derreur = document.getElementById("message_derreur")
 
 const recherche = document.getElementById("recherche")
 
+const ressayer_button = document.getElementById("ressayer_button")
+
+
 
 const WEATHER_CODES = {
     0: { label: "Ciel dégagé", icon: "☀️" },
@@ -58,6 +61,7 @@ recherche.addEventListener("click", function () {
 
     const nomVille = ville.value.trim()  /*Recuperer le nom de la ville */
 
+
     if (nomVille === "") {    /*Verifier si le champ est vide */
         message_derreur.textContent = "Veuillez saisir une ville !"
         message_derreur.classList.remove("hidden")
@@ -83,6 +87,7 @@ recherche.addEventListener("click", function () {
         throw new Error("Ville introuvable")
     }
     const resultat = data.results[0]
+    localStorage.setItem("derniere_ville", JSON.stringify(resultat))
     la_ville_selectionner.textContent = resultat.name
     const latitude = resultat.latitude
     const longitude = resultat.longitude
@@ -103,7 +108,7 @@ recherche.addEventListener("click", function () {
         icone.textContent = WEATHER_CODES[codeMeteo].icon
     }
     else {
-        description.textContent = "Météo inconnue" /*sinon affichage description et icone par défaut */
+        description.textContent = "Meteo inconnue" /*sinon affichage description et icone par défaut */
         icone.textContent = "🌡️"
     }
 
@@ -141,10 +146,105 @@ recherche.addEventListener("click", function () {
             return jours
         })
         .catch(error => {
-            message_derreur.textContent = error.message
+            if(error instanceof TypeError){
+                message_derreur.textContent = "vous avez un probleme en connexion internet"
+            }
+            else{
+                 message_derreur.textContent = error.message
+            }
             message_derreur.classList.remove("hidden")
+
+            la_ville_selectionner.textContent = ""
+
+            jour_container.innerHTML  = "";
+
+            temperature_en_C.textContent = ""
+    humidite.textContent = ""
+    vent.textContent = ""
         })
         .finally(() => {
             loading.classList.add("hidden")
         });
+})
+
+ressayer_button.addEventListener("click", function () {
+    const resultat = JSON.parse(localStorage.getItem("derniere_ville"));
+
+    la_ville_selectionner.textContent = resultat.name
+    const latitude = resultat.latitude
+    const longitude = resultat.longitude
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=5&wind_speed_unit=kmh&timezone=auto`
+
+    fetch(weatherUrl).then(response => {
+             if (!response.ok) {
+        throw new Error("Erreur lors de la récupération de la météo")
+    }
+    return response.json()
+        })
+       .then(meteo => {
+    const codeMeteo = meteo.current.weather_code
+
+    if (WEATHER_CODES[codeMeteo]) {   /*verifier que le code meteo existe dans mon objet WEATHER_CODES */
+        description.textContent = WEATHER_CODES[codeMeteo].label   /*label et icon */
+        icone.textContent = WEATHER_CODES[codeMeteo].icon
+    }
+    else {
+        description.textContent = "Meteo inconnue" /*sinon affichage description et icone par défaut */
+        icone.textContent = "🌡️"
+    }
+
+    temperature_en_C.textContent = meteo.current.temperature_2m + " °C"
+    humidite.textContent = meteo.current.relative_humidity_2m + " %"
+    vent.textContent = meteo.current.wind_speed_10m + " km/h"
+
+    return meteo
+})
+        .then(jours => {  /*affichage de prevision de 5 jours */
+            jour_container.innerHTML = ""
+            jours.daily.temperature_2m_max.forEach((jour, index) => {         /*affichage des prochains jours */
+                const date = new Date(jours.daily.time[index])
+                        const dateEnClair = date.toLocaleDateString("fr-FR", {   /*afficher la date clair */
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long"
+                    })
+                    const codeJour = jours.daily.weather_code[index]
+                    let iconeJour = "🌡️"
+
+                    if (WEATHER_CODES[codeJour]) {    /*icone correspondant a la meteo du jour */
+                        iconeJour = WEATHER_CODES[codeJour].icon
+                    }
+
+                jour_container.innerHTML += ` 
+                    <div class="bg-white p-5 w-full">
+                        <h3>${dateEnClair}</h3>
+                        <p>${iconeJour}</p>
+                        <p>${jour} °C</p>
+                        <p>${jours.daily.temperature_2m_min[index]} °C</p>
+                    </div> `
+            });
+
+            return jours
+        })
+        .catch(error => {
+            if(error instanceof TypeError){
+                message_derreur.textContent = "vous avez un probleme en connexion internet"
+            }
+            else{
+                 message_derreur.textContent = error.message
+            }
+            message_derreur.classList.remove("hidden")
+
+            la_ville_selectionner.textContent = ""
+
+            jour_container.innerHTML  = "";
+
+            temperature_en_C.textContent = ""
+    humidite.textContent = ""
+    vent.textContent = ""
+        })
+        .finally(() => {
+            loading.classList.add("hidden")
+        });
+    
 })
