@@ -83,7 +83,7 @@ recherche.addEventListener("click", function () {
         })
         .then(data => {
 
-    if (!data.results || data.results.length === 0) {
+    if (!data.results || data.results.length === 0) {  /*aucun ville trouver */
         throw new Error("Ville introuvable")
     }
     const resultat = data.results[0]
@@ -92,7 +92,7 @@ recherche.addEventListener("click", function () {
     const latitude = resultat.latitude
     const longitude = resultat.longitude
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=5&wind_speed_unit=kmh&timezone=auto`
-    return fetch(weatherUrl)
+    return fetch(weatherUrl)    
 })
         .then(response => {
              if (!response.ok) {
@@ -177,7 +177,7 @@ ressayer_button.addEventListener("click", function () {
 
     fetch(weatherUrl).then(response => {
              if (!response.ok) {
-        throw new Error("Erreur lors de la récupération de la météo")
+        throw new Error("Erreur lors de la recuperation de la meteo")
     }
     return response.json()
         })
@@ -201,7 +201,7 @@ ressayer_button.addEventListener("click", function () {
 })
         .then(jours => {  /*affichage de prevision de 5 jours */
             jour_container.innerHTML = ""
-            jours.daily.temperature_2m_max.forEach((jour, index) => {         /*affichage des prochains jours */
+            jours.daily.forEach((jour, index) => {         /*affichage des prochains jours */
                 const date = new Date(jours.daily.time[index])
                         const dateEnClair = date.toLocaleDateString("fr-FR", {   /*afficher la date clair */
                         weekday: "long",
